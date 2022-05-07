@@ -7,15 +7,32 @@ const testData = require('../db/data/test-data')
 beforeEach(() => seed(testData))
 afterAll(() => connection.end())
 
-describe('TOPICS', () => {
-  describe('GET /topics', () => {
-    test('status: 200 - should respond with an array of objects, each of which should have the properties "slug" and "description".', () => {
-      return request(app)
-        .get('/topics')
-        .expect(200)
-        .then(({ body }) => {
-          console.log(body)
+describe('ALL', () => {
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/topicz')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
+      })
+  })
+})
+
+describe('GET - /api/topics', () => {
+  test('status: 200 - should return an array of 3 topic objects with slug and description properties', () => {
+    return request(app)
+      .get('/api/topics')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveLength(3)
+        body.forEach((topic) => {
+          expect(topic).toEqual(
+            expect.objectContaining({
+              slug: expect.any(String),
+              description: expect.any(String),
+            })
+          )
         })
-    })
+      })
   })
 })
