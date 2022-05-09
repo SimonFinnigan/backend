@@ -63,8 +63,9 @@ describe('GET - /api/articles', () => {
 
 describe('GET - /api/articles/:article_id', () => {
   test('status: 200 - a single article array of article objects, each of which should have the following properties: author, table, title, article_id, topic, created_at, votes, comment_count', () => {
+    const article_id = 1
     return request(app)
-      .get('/api/articles/1')
+      .get(`/api/articles/${article_id}`)
       .expect(200)
       .then(({ body }) => {
         expect(body).toHaveLength(1)
@@ -81,6 +82,19 @@ describe('GET - /api/articles/:article_id', () => {
             })
           )
         })
+      })
+  })
+})
+
+describe('PATCH - /api/articles/:article_id', () => {
+  test('status: 200 - returns an update article when entered with an object of inc_votes: newVote', () => {
+    const article_id = 1
+    const inc_votes = { inc_votes: 3 }
+    return request(app)
+      .patch(`/api/articles/${article_id}`)
+      .send(inc_votes)
+      .then(({ body }) => {
+        console.log(body)
       })
   })
 })
