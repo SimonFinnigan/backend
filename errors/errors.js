@@ -19,9 +19,15 @@ const handleServerErrors = (err, req, res, next) => {
   res.status(500).send({ msg: 'Internal Server Error' })
 }
 
+const handleInvalidInputErrors = (err, req, res, next) => {
+  console.log(err)
+  res.status(400).send({ msg: 'Bad Request' })
+}
+
 module.exports = {
   handle404Errors,
   handleCustomErrors,
   handlePsqlErrors,
   handleServerErrors,
+  handleInvalidInputErrors,
 }

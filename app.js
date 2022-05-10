@@ -4,6 +4,7 @@ const {
   handleCustomErrors,
   handlePsqlErrors,
   handleServerErrors,
+  handleInvalidInputErrors,
 } = require('./errors/errors')
 const app = express()
 
@@ -16,6 +17,7 @@ app.use('/api', apiRouter)
 app.use(handleCustomErrors)
 app.use(handlePsqlErrors)
 app.use(handleServerErrors)
+app.use(handleInvalidInputErrors)
 
 app.all('/*', handle404Errors)
 
