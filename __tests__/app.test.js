@@ -7,17 +7,6 @@ const testData = require('../db/data/test-data')
 beforeEach(() => seed(testData))
 afterAll(() => connection.end())
 
-describe('ALL', () => {
-  test('status: 404', () => {
-    return request(app)
-      .get('/api/topicz')
-      .expect(404)
-      .then(({ body: { msg } }) => {
-        expect(msg).toBe('Not Found')
-      })
-  })
-})
-
 describe('GET - /api/topics', () => {
   test('status: 200 - should return an array of 3 topic objects with slug and description properties', () => {
     return request(app)
@@ -33,6 +22,14 @@ describe('GET - /api/topics', () => {
             })
           )
         })
+      })
+  })
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/topicz')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
       })
   })
 })
@@ -59,12 +56,21 @@ describe('GET - /api/articles', () => {
         })
       })
   })
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/articlez')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
+      })
+  })
 })
 
 describe('GET - /api/articles/:article_id', () => {
   test('status: 200 - a single article array of article objects, each of which should have the following properties: author, table, title, article_id, topic, created_at, votes, comment_count', () => {
+    const article_id = 1
     return request(app)
-      .get('/api/articles/1')
+      .get(`/api/articles/${article_id}`)
       .expect(200)
       .then(({ body }) => {
         expect(body).toHaveLength(1)
@@ -81,6 +87,52 @@ describe('GET - /api/articles/:article_id', () => {
             })
           )
         })
+      })
+  })
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/articlr')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
+      })
+  })
+  test('status: 400', () => {
+    return request(app)
+      .get('/api/articles/asd')
+      .expect(400)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Invalid input')
+      })
+  })
+})
+
+describe('PATCH - /api/articles/:article_id', () => {
+  test('status: 200 - returns an update article when entered with an object of inc_votes: newVote', () => {
+    const article_id = 1
+    const inc_votes = { inc_votes: 1 }
+    return request(app)
+      .patch(`/api/articles/${article_id}`)
+      .send(inc_votes)
+      .then(({ body }) => {
+        console.log(body)
+        expect.objectContaining({
+          article_id: 1,
+          title: 'Living in the shadow of a great man',
+          topic: 'mitch',
+          author: 'butter_bridge',
+          body: 'I find this existence challenging',
+          created_at: expect.any(String),
+          votes: 101,
+        })
+      })
+  })
+  test(`status: 404 - returns a path not found message if article id doesn't exist`, () => {
+    return request(app)
+      .get('/api/articles/123')
+      .expect(404)
+      .then(({ body }) => {
+        expect(body.msg).toBe('Article not found.')
       })
   })
 })
