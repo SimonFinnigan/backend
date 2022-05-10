@@ -3,6 +3,7 @@ const request = require('supertest')
 const connection = require('../db/connection')
 const seed = require('../db/seeds/seed')
 const testData = require('../db/data/test-data')
+const { forEach } = require('../db/data/test-data/users')
 
 beforeEach(() => seed(testData))
 afterAll(() => connection.end())
@@ -113,18 +114,20 @@ describe('PATCH - /api/articles/:article_id', () => {
     const inc_votes = { inc_votes: 1 }
     return request(app)
       .patch(`/api/articles/${article_id}`)
+      .expect(200)
       .send(inc_votes)
       .then(({ body }) => {
-        console.log(body)
-        expect.objectContaining({
-          article_id: 1,
-          title: 'Living in the shadow of a great man',
-          topic: 'mitch',
-          author: 'butter_bridge',
-          body: 'I find this existence challenging',
-          created_at: expect.any(String),
-          votes: 101,
-        })
+        expect(body).toEqual(
+          expect.objectContaining({
+            article_id: 1,
+            title: 'Living in the shadow of a great man',
+            topic: 'mitch',
+            author: 'butter_bridge',
+            body: 'I find this existence challenging',
+            created_at: expect.any(String),
+            votes: 101,
+          })
+        )
       })
   })
   test(`status: 404 - returns a path not found message if article id doesn't exist`, () => {
@@ -133,6 +136,30 @@ describe('PATCH - /api/articles/:article_id', () => {
       .expect(404)
       .then(({ body }) => {
         expect(body.msg).toBe('Article not found.')
+      })
+  })
+})
+
+describe('GET - /api/users', () => {
+  test('status: 200 - responds with an array of objects, each object should have the "username" property', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveLength(4)
+        body.forEach((user) => {
+          expect(user).toEqual(
+            expect.objectContaining({ username: expect.any(String) })
+          )
+        })
+      })
+  })
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/userz')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
       })
   })
 })
