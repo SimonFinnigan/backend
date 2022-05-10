@@ -113,18 +113,20 @@ describe('PATCH - /api/articles/:article_id', () => {
     const inc_votes = { inc_votes: 1 }
     return request(app)
       .patch(`/api/articles/${article_id}`)
+      .expect(200)
       .send(inc_votes)
       .then(({ body }) => {
-        console.log(body)
-        expect.objectContaining({
-          article_id: 1,
-          title: 'Living in the shadow of a great man',
-          topic: 'mitch',
-          author: 'butter_bridge',
-          body: 'I find this existence challenging',
-          created_at: expect.any(String),
-          votes: 101,
-        })
+        expect(body).toEqual(
+          expect.objectContaining({
+            article_id: 1,
+            title: 'Living in the shadow of a great man',
+            topic: 'mitch',
+            author: 'butter_bridge',
+            body: 'I find this existence challenging',
+            created_at: expect.any(String),
+            votes: 101,
+          })
+        )
       })
   })
   test(`status: 404 - returns a path not found message if article id doesn't exist`, () => {
