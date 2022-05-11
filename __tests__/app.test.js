@@ -24,9 +24,35 @@ describe('GET - /api/topics', () => {
         })
       })
   })
+
   test('status: 404', () => {
     return request(app)
       .get('/api/topicz')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
+      })
+  })
+})
+
+describe('GET - /api/users', () => {
+  test('status: 200 - responds with an array of objects, each object should have the "username" property', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveLength(4)
+        body.forEach((user) => {
+          expect(user).toEqual(
+            expect.objectContaining({ username: expect.any(String) })
+          )
+        })
+      })
+  })
+
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/userz')
       .expect(404)
       .then(({ body: { msg } }) => {
         expect(msg).toBe('Not Found')
@@ -56,6 +82,7 @@ describe('GET - /api/articles', () => {
         })
       })
   })
+
   test('status: 404', () => {
     return request(app)
       .get('/api/articlez')
@@ -92,6 +119,7 @@ describe('GET - /api/articles/:article_id', () => {
         })
       })
   })
+
   test('status: 404', () => {
     return request(app)
       .get(`/api/articles/111`)
@@ -100,6 +128,7 @@ describe('GET - /api/articles/:article_id', () => {
         expect(msg).toBe('Article not found.')
       })
   })
+
   test('status: 400', () => {
     return request(app)
       .get('/api/articles/asd')
@@ -133,6 +162,7 @@ describe('PATCH - /api/articles/:article_id', () => {
         )
       })
   })
+
   test(`status: 404 - returns a path not found message if article id doesn't exist`, () => {
     const article_id = 1
 
@@ -168,6 +198,7 @@ describe('GET - /api/articles/:article_id/comments', () => {
         })
       })
   })
+
   test('status: 404', () => {
     const article_id = 1
 
@@ -180,26 +211,44 @@ describe('GET - /api/articles/:article_id/comments', () => {
   })
 })
 
-describe('GET - /api/users', () => {
-  test('status: 200 - responds with an array of objects, each object should have the "username" property', () => {
+describe('POST - /api/articles/:article_id/comments', () => {
+  test('status: 201 - should accept a request body with username and body properties and responds with the posted comment', () => {
+    const article_id = 1
+    const userComment = {
+      username: 'lurker',
+      body: 'Hello!',
+    }
+
     return request(app)
-      .get('/api/users')
-      .expect(200)
-      .then(({ body }) => {
-        expect(body).toHaveLength(4)
-        body.forEach((user) => {
-          expect(user).toEqual(
-            expect.objectContaining({ username: expect.any(String) })
-          )
-        })
+      .post(`/api/articles/${article_id}/comments`)
+      .send(userComment)
+      .expect(201)
+      .then(({ body: { comment } }) => {
+        expect(comment).toEqual(
+          expect.objectContaining({
+            comment_id: expect.any(Number),
+            body: userComment.body,
+            article_id: article_id,
+            author: userComment.username,
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+          })
+        )
       })
   })
-  test('status: 404', () => {
+
+  test('status: 400 - should return a message and a status 400 when an invalid article_id is provided', () => {
+    const newComment = {
+      username: 'lurker',
+      body: 'Hello',
+    }
+
     return request(app)
-      .get('/api/userz')
-      .expect(404)
-      .then(({ body: { msg } }) => {
-        expect(msg).toBe('Not Found')
+      .post('/api/articles/dog/comments')
+      .send(newComment)
+      .expect(400)
+      .then((res) => {
+        expect(res.body.msg).toBe('Invalid input')
       })
   })
 })
