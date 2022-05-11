@@ -34,6 +34,30 @@ describe('GET - /api/topics', () => {
   })
 })
 
+describe('GET - /api/users', () => {
+  test('status: 200 - responds with an array of objects, each object should have the "username" property', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveLength(4)
+        body.forEach((user) => {
+          expect(user).toEqual(
+            expect.objectContaining({ username: expect.any(String) })
+          )
+        })
+      })
+  })
+  test('status: 404', () => {
+    return request(app)
+      .get('/api/userz')
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
+      })
+  })
+})
+
 describe('GET - /api/articles', () => {
   test('status: 200 - an articles array of article objects, each of which should have the following properties: author, table, title, article_id, topic, created_at, votes, comment_count', () => {
     return request(app)
@@ -180,26 +204,4 @@ describe('GET - /api/articles/:article_id/comments', () => {
   })
 })
 
-describe('GET - /api/users', () => {
-  test('status: 200 - responds with an array of objects, each object should have the "username" property', () => {
-    return request(app)
-      .get('/api/users')
-      .expect(200)
-      .then(({ body }) => {
-        expect(body).toHaveLength(4)
-        body.forEach((user) => {
-          expect(user).toEqual(
-            expect.objectContaining({ username: expect.any(String) })
-          )
-        })
-      })
-  })
-  test('status: 404', () => {
-    return request(app)
-      .get('/api/userz')
-      .expect(404)
-      .then(({ body: { msg } }) => {
-        expect(msg).toBe('Not Found')
-      })
-  })
-})
+
