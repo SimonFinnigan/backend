@@ -3,7 +3,6 @@ const request = require('supertest')
 const connection = require('../db/connection')
 const seed = require('../db/seeds/seed')
 const testData = require('../db/data/test-data')
-const { forEach } = require('../db/data/test-data/users')
 
 beforeEach(() => seed(testData))
 afterAll(() => connection.end())
@@ -70,12 +69,14 @@ describe('GET - /api/articles', () => {
 describe('GET - /api/articles/:article_id', () => {
   test('status: 200 - a single article array of article objects, each of which should have the following properties: author, table, title, article_id, topic, created_at, votes, comment_count', () => {
     const article_id = 1
+
     return request(app)
       .get(`/api/articles/${article_id}`)
       .expect(200)
       .then(({ body }) => {
         expect(body).toHaveLength(1)
         body.forEach((article) => {
+          expect(article.comment_count).toBe(11)
           expect(article).toEqual(
             expect.objectContaining({
               article_id: expect.any(Number),
@@ -85,6 +86,7 @@ describe('GET - /api/articles/:article_id', () => {
               body: expect.any(String),
               created_at: expect.any(String),
               votes: expect.any(Number),
+              comment_count: expect.any(Number),
             })
           )
         })
@@ -92,10 +94,10 @@ describe('GET - /api/articles/:article_id', () => {
   })
   test('status: 404', () => {
     return request(app)
-      .get('/api/articlr')
+      .get(`/api/articles/111`)
       .expect(404)
       .then(({ body: { msg } }) => {
-        expect(msg).toBe('Not Found')
+        expect(msg).toBe('Article not found.')
       })
   })
   test('status: 400', () => {
@@ -112,6 +114,7 @@ describe('PATCH - /api/articles/:article_id', () => {
   test('status: 200 - returns an update article when entered with an object of inc_votes: newVote', () => {
     const article_id = 1
     const inc_votes = { inc_votes: 1 }
+
     return request(app)
       .patch(`/api/articles/${article_id}`)
       .expect(200)
@@ -131,11 +134,48 @@ describe('PATCH - /api/articles/:article_id', () => {
       })
   })
   test(`status: 404 - returns a path not found message if article id doesn't exist`, () => {
+    const article_id = 1
+
     return request(app)
-      .get('/api/articles/123')
-      .expect(404)
+      .patch(`/api/articles/${article_id}s`)
+      .expect(400)
       .then(({ body }) => {
-        expect(body.msg).toBe('Article not found.')
+        expect(body.msg).toBe('Invalid input')
+      })
+  })
+})
+
+describe('GET - /api/articles/:article_id/comments', () => {
+  test('status: 200 - should return an article response object which should also now include: comment_id, votes, created_at, username, body', () => {
+    const article_id = 1
+
+    return request(app)
+      .get(`/api/articles/${article_id}/comments`)
+      .expect(200)
+      .then(({ body }) => {
+        expect(body).toHaveLength(11)
+        body.forEach((comment) => {
+          expect(comment).toEqual(
+            expect.objectContaining({
+              comment_id: expect.any(Number),
+              body: expect.any(String),
+              article_id: article_id,
+              author: expect.any(String),
+              votes: expect.any(Number),
+              created_at: expect.any(String),
+            })
+          )
+        })
+      })
+  })
+  test('status: 404', () => {
+    const article_id = 1
+
+    return request(app)
+      .get(`/api/articles/${article_id}/commentz`)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Not Found')
       })
   })
 })
