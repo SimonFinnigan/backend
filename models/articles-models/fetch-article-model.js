@@ -11,14 +11,14 @@ const fetchArticle = (article_id) => {
       GROUP BY a.article_id`,
       [article_id]
     )
-    .then(({ rows }) => {
-      if (!rows[0]) {
+    .then(({ rows: article }) => {
+      if (!article[0]) {
         return Promise.reject({
           status: 404,
           msg: 'Article not found.',
         })
       }
-      return rows
+      return article
     })
 }
 

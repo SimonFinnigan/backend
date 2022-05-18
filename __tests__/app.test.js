@@ -3,6 +3,7 @@ const request = require('supertest')
 const connection = require('../db/connection')
 const seed = require('../db/seeds/seed')
 const testData = require('../db/data/test-data')
+const sorted = require('jest-sorted')
 
 beforeEach(() => seed(testData))
 afterAll(() => connection.end())
@@ -82,13 +83,105 @@ describe('GET - /api/articles', () => {
         })
       })
   })
-
   test('status: 404', () => {
     return request(app)
       .get('/api/articlez')
       .expect(404)
       .then(({ body: { msg } }) => {
         expect(msg).toBe('Not Found')
+      })
+  })
+})
+
+describe('GET - /api/articles (query)', () => {
+  test('status 200: returns an array of article objects in descending date order by default', () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then(({ body: articles }) => {
+        expect(articles).toBeSortedBy('created_at', {
+          descending: true,
+        })
+      })
+  })
+  test('status 200: returns an array of article objects in ascending date order when requested in query params', () => {
+    return request(app)
+      .get('/api/articles?order=asc')
+      .expect(200)
+      .then(({ body: articles }) => {
+        expect(articles).toBeSortedBy('created_at', {
+          ascending: true,
+        })
+      })
+  })
+  test('status 200: returns an array of article objects srted by author in descnding order when requested in query params', () => {
+    return request(app)
+      .get('/api/articles?sort_by=author')
+      .expect(200)
+      .then(({ body: articles }) => {
+        expect(articles).toBeSortedBy('author', {
+          descending: true,
+        })
+      })
+  })
+  test('status 200: returns an array of article objects filtered by topics when requested in query params', () => {
+    return request(app)
+      .get('/api/articles?topic=mitch')
+      .expect(200)
+      .then(({ body: articles }) => {
+        expect(articles).toHaveLength(11)
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              topic: 'mitch',
+            })
+          )
+        })
+      })
+  })
+  test('status 200: returns an array of article objects filtered by topics and sorted by author in ascending order when requested in query params', () => {
+    return request(app)
+      .get('/api/articles?sort_by=author&&order=asc&&topic=mitch')
+      .expect(200)
+      .then(({ body: articles }) => {
+        expect(articles).toHaveLength(11)
+        articles.forEach((article) => {
+          expect(article).toEqual(
+            expect.objectContaining({
+              topic: 'mitch',
+            })
+          )
+        })
+        expect(articles).toBeSortedBy('author', {
+          ascending: true,
+        })
+      })
+  })
+})
+
+describe('ERRORS  /api/articles (queries)', () => {
+  test('status 400: returns bad req id sort_query is not valid', () => {
+    return request(app)
+      .get('/api/articles?sort_by=snacks')
+      .expect(400)
+      .then(({ body: message }) => {
+        expect(message.msg).toBe('Invalid sort query')
+      })
+  })
+  test('status 400: returns bad req if order query is not valid', () => {
+    return request(app)
+      .get('/api/articles?order=blankets')
+      .expect(400)
+      .then(({ body: message }) => {
+        expect(message.msg).toBe('Invalid order query')
+      })
+  })
+  test('status 400: returns bad req id topic query is not valid', () => {
+    return request(app)
+      .get('/api/articles?topic=pups')
+      .expect(400)
+      .then(({ body: message }) => {
+        expect(message.msg).toBe('Invalid topic query')
       })
   })
 })
