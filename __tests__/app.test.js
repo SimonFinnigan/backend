@@ -276,6 +276,7 @@ describe('GET - /api/articles/:article_id/comments', () => {
       .get(`/api/articles/${article_id}/comments`)
       .expect(200)
       .then(({ body }) => {
+        // console.log(body)
         expect(body).toHaveLength(11)
         body.forEach((comment) => {
           expect(comment).toEqual(
@@ -342,6 +343,32 @@ describe('POST - /api/articles/:article_id/comments', () => {
       .expect(400)
       .then((res) => {
         expect(res.body.msg).toBe('Invalid input')
+      })
+  })
+})
+
+describe('DELETE/api/comments/:comment_id', () => {
+  test('status 204: returns no content and deletes the comment by comment id', () => {
+    const article_id = 1
+    const comment_id = 18
+
+    return request(app)
+      .delete(`/api/articles/${article_id}/comments/${comment_id}`)
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({})
+      })
+  })
+})
+describe('ERRORS/api/comments/:comment_id', () => {
+  test('status 404: returns a not found error if a valid comment id is given but does not exist', () => {
+    const article_id = 1
+    const comment_id = 101
+    return request(app)
+      .delete(`/api/articles/${article_id}/comments/${comment_id}`)
+      .expect(404)
+      .then(({ body: { msg } }) => {
+        expect(msg).toBe('Comment not found')
       })
   })
 })
