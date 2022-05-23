@@ -4,6 +4,7 @@ const getArticles = require('../controllers/articles-controllers/get-articles-co
 const getArticleComments = require('../controllers/comments-controller/get-article-comments-controller')
 const patchArticle = require('../controllers/articles-controllers/patch-article-controller')
 const postArticleComment = require('../controllers/comments-controller/post-article-comment-controller')
+const deleteArticleComment = require('../controllers/comments-controller/delete-article-comment-controller')
 
 articlesRouter.route('/').get(getArticles)
 
@@ -12,5 +13,9 @@ articlesRouter
   .route('/:article_id/comments')
   .get(getArticleComments)
   .post(postArticleComment)
+
+articlesRouter
+  .route('/:article_id/comments/:comment_id')
+  .delete(deleteArticleComment)
 
 module.exports = articlesRouter
