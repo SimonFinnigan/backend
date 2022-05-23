@@ -372,3 +372,11 @@ describe('ERRORS/api/comments/:comment_id', () => {
       })
   })
 })
+
+describe('ENDPOINTS', () => {
+  describe('/api', () => {
+    test('status 200: returns JSON describing all available endpoints', () => {
+      return request(app).get(`/api`).expect(200)
+    })
+  })
+})
