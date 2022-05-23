@@ -1,6 +1,7 @@
-const checkCommentExists = require('../../models/comments-models/check-comment-model')
-const removeArticleComment = require('../../models/comments-models/remove-article-comment-model')
-
+const {
+  removeArticleComment,
+  checkCommentExists,
+} = require('../../models/comments-models/remove-article-comment-model')
 
 const deleteArticleComment = (req, res, next) => {
   const { comment_id } = req.params

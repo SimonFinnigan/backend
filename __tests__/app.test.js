@@ -363,12 +363,11 @@ describe('DELETE/api/comments/:comment_id', () => {
 describe('ERRORS/api/comments/:comment_id', () => {
   test('status 404: returns a not found error if a valid comment id is given but does not exist', () => {
     const article_id = 1
-    const comment_id = 100
+    const comment_id = 101
     return request(app)
       .delete(`/api/articles/${article_id}/comments/${comment_id}`)
       .expect(404)
       .then(({ body: { msg } }) => {
-        console.log(msg)
         expect(msg).toBe('Comment not found')
       })
   })
